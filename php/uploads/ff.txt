@@ -1,0 +1,19 @@
+    using (DbModels context = new DbModels())
+    {
+        return View(context.books.ToList());
+    }
+        
+}
+
+
+    // GET: Book/Details/5
+    public ActionResult Details(int id)
+    {
+        using (DbModels context = new DbModels())
+        {
+            return View(context.books.Where(x => x.id == id ));
+
+        }
+
+    }
+}

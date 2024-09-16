@@ -1,0 +1,88 @@
+<?php
+// Inicia la sesión si aún no está iniciada
+session_start();
+
+// Verifica si el carrito existe en la sesión
+if (!isset($_SESSION['carrito'])) {
+    $_SESSION['carrito'] = array();
+}
+
+// Verifica si se ha enviado una solicitud para agregar o eliminar un producto del carrito
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (isset($_POST['agregar'])) {
+        // Agrega el producto al carrito
+        $producto_id = $_POST['producto_id'];
+        $producto_nombre = $_POST['producto_nombre'];
+        $producto_precio = $_POST['producto_precio'];
+
+        $_SESSION['carrito'][] = array(
+            'id' => $producto_id,
+            'nombre' => $producto_nombre,
+            'precio' => $producto_precio
+        );
+    } elseif (isset($_POST['eliminar'])) {
+        // Elimina el producto del carrito
+        $producto_id = $_POST['producto_id'];
+
+        // Encuentra la posición del producto en el carrito
+        $posicion = array_search($producto_id, array_column($_SESSION['carrito'], 'id'));
+
+        // Elimina el producto del carrito
+        if ($posicion !== false) {
+            unset($_SESSION['carrito'][$posicion]);
+        }
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="container mt-5">
+        <h2>Carrito de Compras</h2>
+
+        <!-- Mostrar productos en el carrito -->
+        <div class="row">
+            <?php
+            $total_carrito = 0;
+
+            foreach ($_SESSION['carrito'] as $producto) {
+                $total_carrito += $producto['precio'];
+            ?>
+                <div class="col-lg-4 col-md-6 col-sm-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3"><?php echo $producto['nombre']; ?></h5>
+                            <h2 class="card-text">$<?php echo $producto['precio']; ?></h2>
+
+                            <!-- Agrega un formulario para eliminar el producto del carrito -->
+                            <form action="carrito.php" method="post">
+                                <input type="hidden" name="eliminar" value="1">
+                                <input type="hidden" name="producto_id" value="<?php echo $producto['id']; ?>">
+                                <input type="submit" class="btn btn-outline-danger" value="Eliminar">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            <?php
+            }
+            ?>
+        </div>
+
+        <p>Total del carrito: $<?php echo $total_carrito; ?></p>
+
+        <div class="text-center mt-4">
+            <a class="btn btn-outline-dark" href="productos.php">Continuar Comprando</a>
+            <a class="btn btn-success" href="#">Realizar Pago</a>
+        </div>
+    </div>
+
+</body>
+</html>
